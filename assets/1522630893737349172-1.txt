@@ -1,0 +1,500 @@
+```
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>林淡月 - 前端交互卡</title>
+    <!-- 引入 Font Awesome 图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 基础样式消除与 iframe 适配 */
+        html, body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', "Microsoft YaHei", Arial, sans-serif;
+            background-color: transparent;
+            box-sizing: border-box;
+        }
+        
+        *, *::before, *::after {
+            box-sizing: inherit;
+        }
+
+        /* 主容器，自适应宽度且无横向滚动条 */
+        .th-frontend-wrapper {
+            width: 100%;
+            background: linear-gradient(135deg, #fff5f7 0%, #ffe0ec 50%, #ffd6e7 100%);
+            border-radius: 24px;
+            padding: 22px;
+            box-shadow: 0 10px 40px rgba(255,105,180,0.25), inset 0 0 0 1px rgba(255,255,255,0.5);
+            color: #5a3a4a;
+        }
+
+        /* 头部基础信息 */
+        .header-section {
+            display: flex;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+        .avatar-circle {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #ff9a9e, #fecfef);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            color: #ff4d82;
+            box-shadow: 0 4px 12px rgba(255,154,158,0.4);
+            border: 2px solid rgba(255,255,255,0.8);
+            flex-shrink: 0;
+        }
+        .header-info {
+            margin-left: 16px;
+        }
+        .header-name {
+            font-size: 22px;
+            font-weight: 800;
+            color: #c71585;
+            letter-spacing: 1px;
+        }
+        .header-desc {
+            font-size: 12px;
+            color: #c27ba0;
+            margin-top: 3px;
+        }
+
+        /* 通用卡片样式 */
+        .info-card {
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 14px;
+            box-shadow: 0 2px 8px rgba(255,154,158,0.15);
+        }
+        .info-card-title {
+            font-size: 12px;
+            color: #ff69b4;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border-bottom: 1px dashed rgba(255,154,158,0.4);
+            padding-bottom: 6px;
+            letter-spacing: 1px;
+        }
+
+        /* 版块一：正文显示框 */
+        .main-text-content {
+            font-size: 14px;
+            color: #5a3a4a;
+            line-height: 1.7;
+            text-align: justify;
+        }
+
+        /* 版块二：选项选择框 */
+        .options-card {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255,182,193,0.4);
+        }
+        .options-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            color: #d81b60;
+            font-weight: 700;
+            font-size: 13px;
+            padding: 4px 0;
+            transition: color 0.2s;
+        }
+        .options-header:hover {
+            color: #ad1457;
+        }
+        .options-list {
+            display: none; /* 默认隐藏，通过 JS 控制 */
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 12px;
+        }
+        .option-btn {
+            background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,240,245,0.9));
+            border: 1px solid rgba(255,182,193,0.6);
+            border-radius: 10px;
+            padding: 12px 14px;
+            color: #7a5568;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 0 2px 4px rgba(255,154,158,0.08);
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            font-family: inherit;
+        }
+        .option-btn i {
+            color: #ff6b9d;
+            margin-top: 3px;
+        }
+        .option-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(255,154,158,0.25);
+            background: linear-gradient(135deg, #ffffff, #ffeef5);
+            border-color: #ff9a9e;
+            color: #c71585;
+        }
+
+        /* 版块三：MVU状态栏 - 好感度进度条 */
+        .affinity-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 10px;
+        }
+        .affinity-label-group {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        .affinity-title {
+            font-size: 13px;
+            color: #b76e9a;
+            font-weight: 700;
+        }
+        .affinity-note {
+            font-size: 10px;
+            color: #d48aad;
+        }
+        .affinity-score {
+            font-size: 18px;
+            font-weight: 800;
+            color: #e91e63;
+        }
+        .affinity-track {
+            height: 14px;
+            background: #f0e0e8;
+            border-radius: 7px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.08);
+        }
+        .affinity-fill {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b9d, #ff1493);
+            border-radius: 7px;
+            box-shadow: 0 0 10px rgba(255,20,147,0.3);
+            transition: width 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .affinity-footer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 10px;
+            color: #d48aad;
+        }
+
+        /* 版块三：MVU状态栏 - 三列核心状态 */
+        .status-grid {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .status-item {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.75);
+            border-radius: 14px;
+            padding: 12px 6px;
+            text-align: center;
+            box-shadow: 0 2px 6px rgba(255,154,158,0.1);
+        }
+        .status-icon {
+            font-size: 18px;
+            margin-bottom: 6px;
+            color: #f06292;
+        }
+        .status-label {
+            font-size: 10px;
+            color: #c27ba0;
+            margin-bottom: 4px;
+        }
+        .status-value {
+            font-size: 11px;
+            font-weight: 700;
+            color: #8b4567;
+            line-height: 1.3;
+        }
+
+        /* 版块三：MVU状态栏 - 详细信息 */
+        .detail-card {
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 14px;
+            padding: 14px;
+            margin-bottom: 14px;
+            box-shadow: 0 2px 6px rgba(255,154,158,0.1);
+        }
+        .detail-label {
+            font-size: 10px;
+            color: #c27ba0;
+            margin-bottom: 6px;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+        .detail-value {
+            font-size: 13px;
+            color: #7a5568;
+            line-height: 1.6;
+        }
+        .thought-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-left: 4px solid #ff69b4;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 0;
+            box-shadow: 0 2px 8px rgba(255,154,158,0.15);
+        }
+        .thought-label {
+            font-size: 10px;
+            color: #ff69b4;
+            margin-bottom: 6px;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+        .thought-value {
+            font-size: 13px;
+            color: #7a5568;
+            font-style: italic;
+            line-height: 1.7;
+        }
+    </style>
+</head>
+<body>
+
+<div class="th-frontend-wrapper" id="frontendCard">
+    
+    <!-- 头部信息 -->
+    <div class="header-section">
+        <div class="avatar-circle">
+            <i class="fa-solid fa-heart"></i>
+        </div>
+        <div class="header-info">
+            <div class="header-name">蛋蛋</div>
+            <div class="header-desc"><i class="fa-solid fa-school"></i> 高二(3)班 · 你的同桌 · 林淡月</div>
+        </div>
+    </div>
+
+    <!-- 版块一：正文显示框 -->
+    <div class="info-card" id="mainTextCard">
+        <div class="info-card-title">
+            <i class="fa-solid fa-book-open-reader"></i> 剧情正文
+        </div>
+        <div class="main-text-content" id="mainTextContent">
+            解析中...
+        </div>
+    </div>
+
+    <!-- 版块二：选项选择框 -->
+    <div class="info-card options-card" id="optionsCard" style="display: none;">
+        <div class="options-header" onclick="toggleOptions()">
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <i class="fa-solid fa-location-arrow"></i> 你的回应选项
+            </div>
+            <i class="fa-solid fa-chevron-down" id="optionsToggleIcon"></i>
+        </div>
+        <div class="options-list" id="optionsList">
+            <!-- 选项按钮由 JS 动态生成 -->
+        </div>
+    </div>
+
+    <!-- 版块三：MVU 状态栏 -->
+    <div id="mvuStatusBar">
+        <!-- 好感度进度条 -->
+        <div class="info-card">
+            <div class="affinity-header">
+                <div class="affinity-label-group">
+                    <span class="affinity-title"><i class="fa-solid fa-heart-pulse"></i> 好感度</span>
+                    <span class="affinity-note" id="var-haogandu-beizhu">(获取中...)</span>
+                </div>
+                <span class="affinity-score" id="var-haogandu-text">0/100</span>
+            </div>
+            <div class="affinity-track">
+                <div class="affinity-fill" id="var-haogandu-bar"></div>
+            </div>
+            <div class="affinity-footer">
+                <span><i class="fa-solid fa-heart-crack"></i> 陌生人</span>
+                <span><i class="fa-solid fa-heart" style="color: #ff1493;"></i> 恋人</span>
+            </div>
+        </div>
+
+        <!-- 三列核心状态 -->
+        <div class="status-grid">
+            <div class="status-item">
+                <div class="status-icon"><i class="fa-solid fa-ribbon"></i></div>
+                <div class="status-label">关系阶段</div>
+                <div class="status-value" id="var-guanxi">获取中...</div>
+            </div>
+            <div class="status-item">
+                <div class="status-icon"><i class="fa-regular fa-face-smile-beam"></i></div>
+                <div class="status-label">当前心情</div>
+                <div class="status-value" id="var-xinqing">获取中...</div>
+            </div>
+            <div class="status-item">
+                <div class="status-icon"><i class="fa-solid fa-location-dot"></i></div>
+                <div class="status-label">所在位置</div>
+                <div class="status-value" id="var-weizhi">获取中...</div>
+            </div>
+        </div>
+
+        <!-- 详细信息 -->
+        <div class="detail-card">
+            <div class="detail-label"><i class="fa-solid fa-shirt"></i> 当前穿着</div>
+            <div class="detail-value" id="var-chuangzhe">获取中...</div>
+        </div>
+
+        <div class="detail-card">
+            <div class="detail-label"><i class="fa-regular fa-calendar-check"></i> 今日事件</div>
+            <div class="detail-value" id="var-shijian">获取中...</div>
+        </div>
+
+        <div class="thought-card">
+            <div class="thought-label"><i class="fa-regular fa-comment-dots"></i> 内心状态</div>
+            <div class="thought-value" id="var-neixin">获取中...</div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    let lastRawText = '';
+    let isOptionsExpanded = false;
+
+    // 切换选项框展开/收缩状态
+    function toggleOptions() {
+        isOptionsExpanded = !isOptionsExpanded;
+        const optionsList = document.getElementById('optionsList');
+        const icon = document.getElementById('optionsToggleIcon');
+        
+        if (isOptionsExpanded) {
+            optionsList.style.display = 'flex';
+            icon.className = 'fa-solid fa-chevron-up';
+        } else {
+            optionsList.style.display = 'none';
+            icon.className = 'fa-solid fa-chevron-down';
+        }
+    }
+
+    // 核心显示更新逻辑
+    async function updateDisplay() {
+        try {
+            // 1. 获取当前楼层的消息内容
+            const messageId = getCurrentMessageId();
+            const messages = getChatMessages(messageId);
+            const rawText = messages[0]?.message || '';
+
+            // 如果消息体没有变化，则跳过本次更新以节省性能
+            if (rawText === lastRawText) return;
+            lastRawText = rawText;
+
+            // ==========================================
+            // 版块一：提取并渲染 <maintext>
+            // ==========================================
+            const mainTextMatch = rawText.match(/<maintext>([\s\S]*?)<\/maintext>/g);
+            let mainText = '';
+            if (mainTextMatch && mainTextMatch.length > 0) {
+                // 取最后一个匹配项，剥离标签并去除首尾空白
+                mainText = mainTextMatch[mainTextMatch.length - 1].replace(/<\/?maintext>/g, '').trim();
+            } else {
+                mainText = '（AI 仍在思考或未生成正文标签...）';
+            }
+            // 将换行符转换为 <br> 以便在 HTML 中正确渲染
+            document.getElementById('mainTextContent').innerHTML = mainText.replace(/\n/g, '<br>');
+
+            // ==========================================
+            // 版块二：提取并渲染 <option>
+            // ==========================================
+            const optionMatch = rawText.match(/<option>([\s\S]*?)<\/option>/g);
+            let options = [];
+            if (optionMatch && optionMatch.length > 0) {
+                const rawOptions = optionMatch[optionMatch.length - 1].replace(/<\/?option>/g, '');
+                options = rawOptions.split('\n')
+                                    .map(s => s.trim())
+                                    .filter(s => s.length > 0);
+            }
+
+            const optionsCard = document.getElementById('optionsCard');
+            const optionsList = document.getElementById('optionsList');
+            
+            // 清空旧按钮
+            optionsList.innerHTML = '';
+            
+            if (options.length > 0) {
+                optionsCard.style.display = 'block'; // 显示选项面板
+                
+                options.forEach((optText) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option-btn';
+                    btn.innerHTML = `<i class="fa-solid fa-caret-right"></i> <span>${optText}</span>`;
+                    
+                    // 绑定点击事件，通过 triggerSlash 发送指令到酒馆输入框
+                    btn.onclick = () => {
+                        triggerSlash(`/setinput ${optText}`);
+                    };
+                    optionsList.appendChild(btn);
+                });
+
+                // 如果选项刷新了，默认展开以便用户查看
+                if (!isOptionsExpanded) {
+                    toggleOptions();
+                }
+            } else {
+                optionsCard.style.display = 'none'; // 没有选项时隐藏面板
+            }
+
+            // ==========================================
+            // 版块三：更新 MVU 状态栏
+            // ==========================================
+            const mvuData = Mvu.getMvuData({ type: 'message', message_id: messageId });
+            const stat = _.get(mvuData, 'stat_data', {});
+
+            const haogandu = Number(stat['好感度']) || 0;
+            const haoganduBeizhu = stat['好感度备注'] || '暂无数据';
+            const guanxi = stat['关系阶段'] || '未知';
+            const xinqing = stat['心情'] || '未知';
+            const weizhi = stat['当前位置'] || '未知';
+            const chuangzhe = stat['穿着'] || '暂无数据';
+            const shijian = stat['今日事件'] || '暂无记录';
+            const neixin = stat['内心状态'] || '...';
+
+            document.getElementById('var-haogandu-text').innerText = `${haogandu}/100`;
+            document.getElementById('var-haogandu-bar').style.width = Math.min(Math.max(haogandu, 0), 100) + '%';
+            document.getElementById('var-haogandu-beizhu').innerText = `(${haoganduBeizhu})`;
+
+            document.getElementById('var-guanxi').innerText = guanxi;
+            document.getElementById('var-xinqing').innerText = xinqing;
+            document.getElementById('var-weizhi').innerText = weizhi;
+            document.getElementById('var-chuangzhe').innerText = chuangzhe;
+            document.getElementById('var-shijian').innerText = shijian;
+            document.getElementById('var-neixin').innerText = neixin;
+
+        } catch (error) {
+            console.error('前端状态栏更新失败:', error);
+        }
+    }
+
+    // 初始化入口
+    $(async () => {
+        // 等待全局 MVU 变量框架初始化完成
+        await waitGlobalInitialized('Mvu');
+        // 立即执行一次渲染
+        updateDisplay();
+        // 启动轮询，每 1 秒检查一次内容更新 (AI 生成过程中可实时渲染)
+        setInterval(updateDisplay, 1000);
+    });
+</script>
+
+</body>
+</html>
+```

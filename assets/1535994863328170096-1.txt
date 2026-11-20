@@ -1,0 +1,332 @@
+```
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>时雨天音 · 状态栏</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 16px 12px;
+    min-height: 100%;
+    background: #0b0509;
+    -webkit-text-size-adjust: 100%;
+  }
+</style>
+</head>
+<body>
+<div class="th-status-wrapper">
+
+  <div class="thsw-card">
+    <div class="thsw-glow"></div>
+
+    <header class="thsw-head">
+      <div class="thsw-avatar">
+        <span class="thsw-avatar-char">音</span>
+        <span class="thsw-heart"></span>
+      </div>
+      <div class="thsw-id">
+        <div class="thsw-name">时雨天音<span class="thsw-name-sub">Shigure Amane</span></div>
+        <div class="thsw-stage"><span class="thsw-dot"></span><span data-th="关系阶段">暗恋</span></div>
+      </div>
+      <div class="thsw-favor-num">
+        <span data-th="好感度数值">0</span><small>/200</small>
+      </div>
+    </header>
+
+    <section class="thsw-favor">
+      <div class="thsw-favor-top">
+        <span class="thsw-label">好感度</span>
+        <span class="thsw-tier" data-th="好感度称谓">陌生</span>
+      </div>
+      <div class="thsw-bar">
+        <div class="thsw-bar-fill" data-th="好感度条"></div>
+        <i class="thsw-tick" style="left:33.33%"></i>
+        <i class="thsw-tick" style="left:66.66%"></i>
+        <i class="thsw-tick" style="left:83.33%"></i>
+      </div>
+      <div class="thsw-scale"><span>厌恶</span><span>陌生</span><span>喜欢</span><span>狂热</span></div>
+    </section>
+
+    <section class="thsw-mood">
+      <div class="thsw-mood-chip" data-th="心情状态">平静</div>
+      <p class="thsw-inner" data-th="内心所想">……</p>
+    </section>
+
+    <section class="thsw-wear">
+      <span class="thsw-label">着装</span>
+      <div class="thsw-tags" data-th="穿着"></div>
+    </section>
+
+    <div class="thsw-diary-slot" data-th="日记入口" hidden>
+      <button class="thsw-diary-btn" type="button">
+        <span class="thsw-diary-icon">❤</span>
+        <span class="thsw-diary-text">爱 之 日 记</span>
+        <span class="thsw-diary-hint">— 不要看 —</span>
+      </button>
+    </div>
+
+    <div class="thsw-diary-panel" data-th="日记面板" hidden>
+      <div class="thsw-diary-head">
+        <span>爱之日记</span>
+        <button class="thsw-diary-close" type="button">✕</button>
+      </div>
+      <div class="thsw-diary-body" data-th="日记内容"></div>
+    </div>
+  </div>
+
+  <style>
+  .th-status-wrapper{
+    --thsw-bg:#14090f; --thsw-bg2:#1e0d16; --thsw-line:rgba(255,143,190,.22);
+    --thsw-pink:#ff77b0; --thsw-deep:#ff2d6a; --thsw-text:#f3e2ea; --thsw-mute:#a8879a;
+    font-family:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+    color:var(--thsw-text); max-width:520px; margin:10px auto; line-height:1.6;
+  }
+  .th-status-wrapper *{box-sizing:border-box;}
+  .th-status-wrapper .thsw-card{
+    position:relative; overflow:hidden; padding:18px 18px 16px; border-radius:16px;
+    background:linear-gradient(160deg,var(--thsw-bg2) 0%,var(--thsw-bg) 60%);
+    border:1px solid var(--thsw-line);
+    box-shadow:0 8px 30px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.05);
+  }
+  .th-status-wrapper .thsw-glow{
+    position:absolute; top:-60px; right:-60px; width:180px; height:180px; pointer-events:none;
+    background:radial-gradient(circle,rgba(255,45,106,.28),transparent 70%); filter:blur(6px);
+  }
+  .th-status-wrapper .thsw-head{display:flex; align-items:center; gap:12px; position:relative;}
+  .th-status-wrapper .thsw-avatar{
+    position:relative; flex:0 0 52px; width:52px; height:52px; border-radius:50%;
+    display:grid; place-items:center; background:linear-gradient(145deg,#3a1526,#20101a);
+    border:1px solid rgba(255,119,176,.45); box-shadow:0 0 14px rgba(255,45,106,.35);
+    animation:thsw-breathe 3.4s ease-in-out infinite;
+  }
+  @keyframes thsw-breathe{0%,100%{box-shadow:0 0 12px rgba(255,45,106,.28);}50%{box-shadow:0 0 22px rgba(255,45,106,.55);}}
+  .th-status-wrapper .thsw-avatar-char{font-size:22px; font-weight:700; color:var(--thsw-pink); text-shadow:0 0 10px rgba(255,119,176,.6);}
+  .th-status-wrapper .thsw-heart{
+    position:absolute; right:-2px; bottom:-2px; width:12px; height:12px; border-radius:50%;
+    background:var(--thsw-deep); box-shadow:0 0 8px var(--thsw-deep); animation:thsw-beat 1.1s ease-in-out infinite;
+  }
+  @keyframes thsw-beat{0%,100%{transform:scale(1);}30%{transform:scale(1.45);}60%{transform:scale(.95);}}
+  .th-status-wrapper .thsw-id{flex:1 1 auto; min-width:0;}
+  .th-status-wrapper .thsw-name{font-size:17px; font-weight:700; letter-spacing:.5px;}
+  .th-status-wrapper .thsw-name-sub{margin-left:8px; font-size:10px; font-weight:400; color:var(--thsw-mute); letter-spacing:1.5px;}
+  .th-status-wrapper .thsw-stage{
+    display:inline-flex; align-items:center; gap:6px; margin-top:4px; padding:2px 10px; border-radius:999px;
+    font-size:12px; color:var(--thsw-pink); background:rgba(255,119,176,.1); border:1px solid var(--thsw-line);
+  }
+  .th-status-wrapper .thsw-dot{width:5px; height:5px; border-radius:50%; background:var(--thsw-pink); box-shadow:0 0 6px var(--thsw-pink);}
+  .th-status-wrapper .thsw-favor-num{font-size:24px; font-weight:700; color:var(--thsw-pink); font-variant-numeric:tabular-nums; text-shadow:0 0 12px rgba(255,119,176,.45);}
+  .th-status-wrapper .thsw-favor-num small{font-size:11px; color:var(--thsw-mute); font-weight:400;}
+  .th-status-wrapper .thsw-favor{margin-top:14px;}
+  .th-status-wrapper .thsw-favor-top{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;}
+  .th-status-wrapper .thsw-label{font-size:11px; letter-spacing:2px; color:var(--thsw-mute);}
+  .th-status-wrapper .thsw-tier{font-size:12px; color:var(--thsw-text);}
+  .th-status-wrapper .thsw-bar{position:relative; height:9px; border-radius:999px; background:rgba(255,255,255,.07); overflow:hidden;}
+  .th-status-wrapper .thsw-bar-fill{
+    height:100%; width:0; border-radius:999px; transition:width .8s cubic-bezier(.22,1,.36,1);
+    background:linear-gradient(90deg,#6b5a75,#ff77b0 60%,#ff2d6a); box-shadow:0 0 12px rgba(255,45,106,.6);
+  }
+  .th-status-wrapper .thsw-tick{position:absolute; top:0; width:1px; height:100%; background:rgba(255,255,255,.25);}
+  .th-status-wrapper .thsw-scale{display:flex; justify-content:space-between; margin-top:5px; font-size:10px; color:var(--thsw-mute);}
+  .th-status-wrapper .thsw-mood{
+    margin-top:14px; padding:12px 14px; border-radius:12px;
+    background:rgba(255,119,176,.06); border:1px solid rgba(255,119,176,.14);
+  }
+  .th-status-wrapper .thsw-mood-chip{
+    display:inline-block; padding:2px 12px; border-radius:999px; font-size:12px; font-weight:600;
+    color:#1a0a11; background:linear-gradient(135deg,#ffa7c9,#ff5e93);
+  }
+  .th-status-wrapper .thsw-inner{
+    margin:8px 0 0; font-size:13px; color:#e6cfda; font-style:italic; position:relative; padding-left:16px;
+  }
+  .th-status-wrapper .thsw-inner::before{content:"“"; position:absolute; left:0; top:-2px; font-size:20px; color:var(--thsw-pink); opacity:.7;}
+  .th-status-wrapper .thsw-wear{margin-top:12px; display:flex; align-items:flex-start; gap:10px;}
+  .th-status-wrapper .thsw-wear .thsw-label{padding-top:4px; flex:0 0 auto;}
+  .th-status-wrapper .thsw-tags{display:flex; flex-wrap:wrap; gap:6px;}
+  .th-status-wrapper .thsw-tag{
+    padding:2px 9px; border-radius:6px; font-size:11px; color:#e9d3de;
+    background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.09);
+  }
+  .th-status-wrapper .thsw-diary-slot{margin-top:14px;}
+  .th-status-wrapper .thsw-diary-btn{
+    width:100%; padding:11px; cursor:pointer; border-radius:10px; font-family:inherit;
+    color:#ffd9e6; background:linear-gradient(135deg,rgba(255,45,106,.22),rgba(80,0,25,.35));
+    border:1px dashed rgba(255,45,106,.55); display:flex; align-items:center; justify-content:center; gap:8px;
+    animation:thsw-throb 2.6s ease-in-out infinite; transition:transform .15s ease;
+  }
+  .th-status-wrapper .thsw-diary-btn:hover{transform:translateY(-1px); background:linear-gradient(135deg,rgba(255,45,106,.35),rgba(80,0,25,.45));}
+  @keyframes thsw-throb{0%,100%{box-shadow:0 0 0 rgba(255,45,106,0);}50%{box-shadow:0 0 18px rgba(255,45,106,.45);}}
+  .th-status-wrapper .thsw-diary-icon{color:var(--thsw-deep); animation:thsw-beat 1.1s ease-in-out infinite;}
+  .th-status-wrapper .thsw-diary-text{font-size:13px; font-weight:700; letter-spacing:3px;}
+  .th-status-wrapper .thsw-diary-hint{font-size:10px; color:rgba(255,217,230,.55); letter-spacing:1px;}
+  .th-status-wrapper .thsw-diary-panel{
+    margin-top:12px; border-radius:12px; overflow:hidden;
+    background:linear-gradient(180deg,rgba(45,5,18,.95),rgba(20,4,10,.95));
+    border:1px solid rgba(255,45,106,.4); animation:thsw-open .35s ease;
+  }
+  @keyframes thsw-open{from{opacity:0; transform:translateY(-6px);}to{opacity:1; transform:none;}}
+  .th-status-wrapper .thsw-diary-head{
+    display:flex; justify-content:space-between; align-items:center; padding:8px 12px;
+    font-size:12px; letter-spacing:4px; color:#ffbdd4; background:rgba(255,45,106,.16);
+    border-bottom:1px solid rgba(255,45,106,.3);
+  }
+  .th-status-wrapper .thsw-diary-close{
+    background:none; border:none; color:#ffbdd4; cursor:pointer; font-size:13px; padding:0 4px; line-height:1;
+  }
+  .th-status-wrapper .thsw-diary-body{max-height:260px; overflow-y:auto; padding:12px 14px;}
+  .th-status-wrapper .thsw-entry{padding:9px 0; border-bottom:1px dashed rgba(255,45,106,.2);}
+  .th-status-wrapper .thsw-entry:last-child{border-bottom:none;}
+  .th-status-wrapper .thsw-entry-date{font-size:10px; letter-spacing:1px; color:#ff7ba6; margin-bottom:3px;}
+  .th-status-wrapper .thsw-entry-text{font-size:12.5px; color:#f0d5e0; white-space:pre-wrap; word-break:break-word;}
+  .th-status-wrapper .thsw-empty{font-size:12px; color:var(--thsw-mute); text-align:center; padding:10px 0;}
+  @media (max-width:420px){
+    .th-status-wrapper .thsw-favor-num{font-size:19px;}
+    .th-status-wrapper .thsw-wear{flex-direction:column; gap:6px;}
+  }
+  </style>
+
+  <script>
+  (function () {
+    const wrapper =
+      (document.currentScript && document.currentScript.closest('.th-status-wrapper')) ||
+      Array.from(document.querySelectorAll('.th-status-wrapper:not([data-th-ready])')).pop();
+    if (!wrapper) {
+      console.error('[状态栏] 未找到面板容器，请确认 <script> 位于 .th-status-wrapper 内部');
+      return;
+    }
+    wrapper.setAttribute('data-th-ready', '1');
+
+    const $ = name => wrapper.querySelector('[data-th="' + name + '"]');
+
+    // 脱离酒馆环境（直接双击打开 .html）时使用的演示数据
+    const DEMO = {
+      好感度: 132,
+      关系阶段: '暧昧',
+      心情: { 状态: '雀跃', 内心所想: '今天他的伞倾向了我这边三厘米……我数过了。' },
+      穿着: '白色衬衫、深色外套、深色百褶裙、黑色长筒袜、小皮鞋',
+      爱之日记: {
+        '六月十一日': '佐藤同学又恬不知耻地凑了上去呢。\n那个位置是我的。不要用你那肮脏的手触碰他。',
+        '六月十二日': '没关系的。从今以后你不需要再出现了。\n这里只有我们两个。我爱你。',
+      },
+      阶段: 2,
+    };
+
+    const unwrap = v => (Array.isArray(v) ? v[0] : v);
+    const dig = (obj, path, fallback) => {
+      let cur = obj;
+      for (const key of path.split('.')) {
+        if (cur === null || typeof cur !== 'object' || !(key in cur)) return fallback;
+        cur = unwrap(cur[key]);
+      }
+      return cur === undefined || cur === null ? fallback : cur;
+    };
+
+    function readStat() {
+      // 浏览器里没有酒馆助手接口，回退到演示数据
+      if (typeof getVariables !== 'function') return DEMO;
+
+      let vars = {};
+      try {
+        vars = getVariables({ type: 'message', message_id: getCurrentMessageId() }) || {};
+      } catch (e) {
+        try { vars = getVariables({ type: 'chat' }) || {}; } catch (e2) { vars = {}; }
+      }
+      const root = dig(vars, 'stat_data.时雨天音', null);
+      return root && typeof root === 'object' ? root : {};
+    }
+
+    const tierOf = v =>
+      v >= 200 ? '狂热' : v >= 150 ? '爱恋' : v >= 100 ? '喜欢' :
+      v >= 50 ? '颇有好感' : v >= 0 ? '陌生' : v >= -50 ? '厌恶' : '极度厌恶';
+
+    function render() {
+      const stat = readStat();
+
+      const favor = Math.max(-100, Math.min(200, Number(unwrap(stat['好感度'])) || 0));
+      $('好感度数值').textContent = favor;
+      $('好感度称谓').textContent = tierOf(favor);
+      $('好感度条').style.width = ((favor + 100) / 300) * 100 + '%';
+
+      $('关系阶段').textContent = String(dig(stat, '关系阶段', '暗恋'));
+      $('心情状态').textContent = String(dig(stat, '心情.状态', '平静'));
+      $('内心所想').textContent = String(dig(stat, '心情.内心所想', '……'));
+
+      const tags = $('穿着');
+      tags.textContent = '';
+      String(dig(stat, '穿着', ''))
+        .split(/[、,，;；]/)
+        .map(s => s.trim())
+        .filter(Boolean)
+        .forEach(item => {
+          const span = document.createElement('span');
+          span.className = 'thsw-tag';
+          span.textContent = item;
+          tags.appendChild(span);
+        });
+
+      const unlocked = Number(unwrap(stat['阶段'])) === 2;
+      $('日记入口').hidden = !unlocked;
+      if (!unlocked) {
+        $('日记面板').hidden = true;
+        return;
+      }
+
+      const body = $('日记内容');
+      body.textContent = '';
+      const diary = dig(stat, '爱之日记', {}) || {};
+      const entries = Object.entries(diary).reverse();
+      if (!entries.length) {
+        const p = document.createElement('div');
+        p.className = 'thsw-empty';
+        p.textContent = '这里还什么都没有写下……';
+        body.appendChild(p);
+        return;
+      }
+      entries.forEach(([date, text]) => {
+        const item = document.createElement('div');
+        item.className = 'thsw-entry';
+        const d = document.createElement('div');
+        d.className = 'thsw-entry-date';
+        d.textContent = date;
+        const t = document.createElement('div');
+        t.className = 'thsw-entry-text';
+        t.textContent = String(unwrap(text));
+        item.appendChild(d);
+        item.appendChild(t);
+        body.appendChild(item);
+      });
+    }
+
+    wrapper.querySelector('.thsw-diary-btn').addEventListener('click', () => {
+      const panel = $('日记面板');
+      panel.hidden = !panel.hidden;
+    });
+    wrapper.querySelector('.thsw-diary-close').addEventListener('click', () => {
+      $('日记面板').hidden = true;
+    });
+
+    try {
+      render();
+    } catch (e) {
+      const box = document.createElement('pre');
+      box.style.cssText = 'padding:8px;color:#ff9ec0;font-size:11px;white-space:pre-wrap;';
+      box.textContent = '状态栏渲染出错：' + e.message;
+      wrapper.appendChild(box);
+    }
+
+    if (typeof eventOn === 'function') {
+      try {
+        eventOn('mag_variable_update_ended', render);
+        eventOn(tavern_events.MESSAGE_UPDATED, render);
+        eventOn(tavern_events.MESSAGE_SWIPED, render);
+      } catch (e) {}
+    }
+  })();
+  </script>
+
+</div>
+</body>
+</html>
+```

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>角色状态面板</title>
+    <style>
+        /* 
+         * 移除了对 body 的全部全局样式，保持酒馆原生背景和布局 
+         * 将面板自身的居中逻辑写在最外层 wrapper 上
+         */
+
+        /* 外部容器，确立3D透视并居中 */
+        .th-status-wrapper { perspective: 1000px; width: 320px; height: 520px; margin: 10px auto; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        /* 翻转核心，保存3D状态 */
+        .flip-card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform-style: preserve-3d; cursor: pointer; }
+        .flip-card-inner.is-flipped { transform: rotateY(180deg); }
+        
+        /* 正反面共用基础样式：加入 auto 滚动，并隐藏滚动条以防破坏美观 */
+        .flip-card-front, .flip-card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 16px; padding: 25px 20px; box-sizing: border-box; overflow-y: auto; scrollbar-width: none; /* Firefox */ }
+        .flip-card-front::-webkit-scrollbar, .flip-card-back::-webkit-scrollbar { display: none; /* Chrome/Safari */ }
+
+        /* ==================== 翻转前：清纯风格 ==================== */
+        .flip-card-front { 
+            background: linear-gradient(135deg, #ffffff 0%, #fff0f5 100%); 
+            border: 2px solid #ffb6c1; 
+            box-shadow: 0 10px 20px rgba(255, 182, 193, 0.4); 
+            color: #5a5a5a; 
+        }
+        .flip-card-front .header { border-bottom: 2px dashed #ffb6c1; padding-bottom: 12px; margin-bottom: 15px; text-align: center; }
+        .flip-card-front h2 { margin: 0 0 8px 0; color: #ff69b4; font-size: 24px; letter-spacing: 1px; }
+        .flip-card-front .info-row { font-size: 13px; margin: 6px 0; color: #777; font-weight: 500; }
+        .flip-card-front .section-title { font-weight: bold; color: #ff69b4; margin: 20px 0 10px 0; font-size: 16px; text-align: center; background: #fff0f5; border-radius: 20px; padding: 4px 0; }
+        .flip-card-front .clothes-item { display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid #ffe4e1; font-size: 14px; background: rgba(255,255,255,0.6); border-radius: 8px; margin-bottom: 4px; }
+        .flip-card-front .clothes-item:last-child { border-bottom: none; }
+
+        /* ==================== 翻转后：背叛/堕落风格 ==================== */
+        .flip-card-back { 
+            background: linear-gradient(135deg, #140000 0%, #2b0000 100%); 
+            border: 2px solid #8b0000; 
+            box-shadow: 0 10px 30px rgba(139, 0, 0, 0.8), inset 0 0 20px rgba(255,0,0,0.1); 
+            color: #ff9999; 
+            transform: rotateY(180deg); 
+        }
+        .flip-card-back .section-title { font-weight: bold; color: #ff3333; border-bottom: 1px solid #660000; padding-bottom: 6px; margin: 10px 0 10px 0; font-size: 15px; text-shadow: 0 0 8px rgba(255, 0, 0, 0.5); letter-spacing: 1px; }
+        
+        /* 隐秘穿着 */
+        .underwear-item { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 8px; color: #ffb3b3; background: rgba(0,0,0,0.3); padding: 8px 10px; border-radius: 6px; border-left: 3px solid #cc0000; }
+
+        /* 暗示进度条联动 */
+        .hint-wrapper { margin-top: 10px; margin-bottom: 16px; background: rgba(0,0,0,0.4); padding: 10px; border-radius: 8px; }
+        .hint-text { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 8px; color: #ff6666; font-weight: bold; }
+        .hint-bar { width: 100%; height: 6px; background-color: #330000; border-radius: 3px; overflow: hidden; }
+        .hint-bar-fill { height: 100%; background: linear-gradient(90deg, #8b0000, #ff1a1a); box-shadow: 0 0 10px #ff0000; transition: width 0.5s ease-out; }
+
+        /* 开发度进度条 (分段) */
+        .dev-item { margin-bottom: 12px; }
+        .dev-label { font-size: 13px; margin-bottom: 5px; display: flex; justify-content: space-between; color: #ff8080; }
+        .dev-bar { width: 100%; height: 10px; background-color: #1a0000; border-radius: 5px; overflow: hidden; display: flex; border: 1px solid #4d0000; }
+        .dev-segment { flex: 1; border-right: 1px solid #2b0000; transition: background-color 0.3s; }
+        .dev-segment:last-child { border-right: none; }
+        /* 已开发等级的高亮 */
+        .dev-segment.filled { background-color: #b30000; box-shadow: inset 0 0 5px rgba(255, 100, 100, 0.5); }
+    </style>
+</head>
+<body>
+
+<!-- 必须在最外层包裹 class -->
+<div class="th-status-wrapper">
+    <div class="flip-card-inner">
+        <!-- 正面：清纯 -->
+        <div class="flip-card-front">
+            <div class="header">
+                <h2 class="val-name"></h2>
+                <div class="info-row val-datetime"></div>
+                <div class="info-row val-location"></div>
+            </div>
+            <div class="section-title">今日穿着</div>
+            <div class="clothes-list"></div>
+        </div>
+
+        <!-- 背面：背叛 -->
+        <div class="flip-card-back">
+            <div class="section-title">暗示状态</div>
+            <div class="hint-wrapper">
+                <div class="hint-text">
+                    <span>等级：<span class="val-hint-level"></span></span>
+                    <span>次数：<span class="val-hint-count"></span></span>
+                </div>
+                <div class="hint-bar">
+                    <div class="hint-bar-fill"></div>
+                </div>
+            </div>
+
+            <div class="section-title">隐秘衣物</div>
+            <div class="underwear-list"></div>
+
+            <div class="section-title">身体开发度</div>
+            <div class="dev-list"></div>
+        </div>
+    </div>
+
+    <script>
+        // 【隔离渲染规范】自执行匿名函数防止变量污染
+        (function() {
+            // 锁定当前面板的包裹层
+            const currentScript = document.currentScript;
+            const wrapper = currentScript.closest('.th-status-wrapper');
+
+            // 注册翻转点击事件
+            const innerCard = wrapper.querySelector('.flip-card-inner');
+            wrapper.addEventListener('click', () => {
+                innerCard.classList.toggle('is-flipped');
+            });
+
+            // ---------- 获取最新楼层的消息变量 ----------
+            let data = null;
+            try {
+                // 检查全局函数是否存在（酒馆环境）
+                if (typeof getVariables === 'function' && typeof getCurrentMessageId === 'function') {
+                    // 获取最新楼层（-1 或 'latest'）
+                    data = getVariables({ type: 'message', message_id: 'latest' });
+                    console.log('[状态面板] 成功获取最新楼层变量:', data);
+                } else {
+                    console.warn('[状态面板] 未检测到酒馆API，使用模拟数据（仅用于预览）');
+                    // 备选：若不在酒馆中，使用默认示例数据
+                    data = getFallbackData();
+                }
+            } catch (e) {
+                console.error('[状态面板] 获取变量失败，使用模拟数据', e);
+                data = getFallbackData();
+            }
+
+            // 如果获取的数据为空或非对象，则使用模拟数据
+            if (!data || typeof data !== 'object') {
+                data = getFallbackData();
+            }
+
+            // ---------- 渲染面板 ----------
+            renderPanel(wrapper, data);
+
+            // ---------- 辅助函数：模拟数据（仅用于离线预览） ----------
+            function getFallbackData() {
+                return {
+                    "姓名": "樱岛麻衣",
+                    "日期": "2026/08/02",
+                    "星期": "周日",
+                    "时间": "14:02",
+                    "暗示次数": 0,
+                    "暗示等级": "无",
+                    "城市": "藤泽市",
+                    "地点": "樱岛麻衣家·客厅",
+                    "穿着": {
+                        "上装": "米色背心",
+                        "内搭": "无",
+                        "下装": "米色居家短裤",
+                        "袜子": "无",
+                        "鞋子": "居家拖鞋",
+                        "配饰": "兔子发夹",
+                        "内衣": "粉色文胸",
+                        "内裤": "粉色内裤"
+                    },
+                    "开发度": {
+                        "口": 1,
+                        "胸": 0,
+                        "阴蒂": 0,
+                        "阴道": 0
+                    }
+                };
+            }
+
+            // ---------- 渲染函数 ----------
+            function renderPanel(wrapper, data) {
+                // --- 渲染正面 ---
+                wrapper.querySelector('.val-name').textContent = data['姓名'] || '未命名';
+                // 日期、星期、时间合并
+                const dateTime = `${data['日期'] || ''} ${data['星期'] || ''} ${data['时间'] || ''}`.trim() || '未知时间';
+                wrapper.querySelector('.val-datetime').textContent = dateTime;
+                // 城市、地点合并
+                const location = `${data['城市'] || ''} ✦ ${data['地点'] || ''}`.trim() || '未知地点';
+                wrapper.querySelector('.val-location').textContent = location;
+
+                // 穿着 (每行一项，排除内衣内裤)
+                const clothesList = wrapper.querySelector('.clothes-list');
+                clothesList.innerHTML = ''; // 清空
+                const wear = data['穿着'] || {};
+                for (const [key, value] of Object.entries(wear)) {
+                    if (key !== '内衣' && key !== '内裤') {
+                        const item = document.createElement('div');
+                        item.className = 'clothes-item';
+                        item.innerHTML = `<span>${key}</span> <span>${value}</span>`;
+                        clothesList.appendChild(item);
+                    }
+                }
+
+                // --- 渲染背面 ---
+                wrapper.querySelector('.val-hint-level').textContent = data['暗示等级'] || '无';
+                wrapper.querySelector('.val-hint-count').textContent = data['暗示次数'] || 0;
+                
+                // 暗示进度条联动 (根据次数计算宽度，这里设定100为满值)
+                const maxHintCount = 100; 
+                const hintProgress = Math.min(((data['暗示次数'] || 0) / maxHintCount) * 100, 100);
+                wrapper.querySelector('.hint-bar-fill').style.width = `${hintProgress}%`;
+
+                // 隐秘穿着
+                const underwearList = wrapper.querySelector('.underwear-list');
+                underwearList.innerHTML = '';
+                ['内衣', '内裤'].forEach(key => {
+                    if (wear[key]) {
+                        const item = document.createElement('div');
+                        item.className = 'underwear-item';
+                        item.innerHTML = `<span>${key}</span> <span>${wear[key]}</span>`;
+                        underwearList.appendChild(item);
+                    }
+                });
+
+                // 开发度 (每行一项，0-5级分段进度条)
+                const devList = wrapper.querySelector('.dev-list');
+                devList.innerHTML = '';
+                const dev = data['开发度'] || {};
+                for (const [key, value] of Object.entries(dev)) {
+                    const item = document.createElement('div');
+                    item.className = 'dev-item';
+                    
+                    // 构建 5 个阶段的区块
+                    let segmentsHtml = '';
+                    const level = Math.min(Math.max(Number(value) || 0, 0), 5);
+                    for (let i = 1; i <= 5; i++) {
+                        segmentsHtml += `<div class="dev-segment ${i <= level ? 'filled' : ''}"></div>`;
+                    }
+
+                    item.innerHTML = `
+                        <div class="dev-label"><span>${key}</span> <span>Lv.${level}</span></div>
+                        <div class="dev-bar">${segmentsHtml}</div>
+                    `;
+                    devList.appendChild(item);
+                }
+            }
+        })();
+    </script>
+</div>
+
+</body>
+</html>

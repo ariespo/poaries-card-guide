@@ -1,0 +1,212 @@
+import { registerMvuSchema } from 'https://testingcf.jsdelivr.net/gh/StageDog/tavern_resource/dist/util/mvu_zod.js';
+
+
+const memberSchema = z.object({
+  姓名: z.string().prefault(''),
+  代号: z.string().prefault(''),
+  职业: z.enum(['先锋', '近卫', '重装', '狙击', '术师', '医疗', '辅助', '特种', '平民']).prefault('平民'),
+  星级: z.coerce.number().transform(v => _.clamp(v, 1, 6)).prefault(1),
+  等级: z.coerce.number().transform(v => _.clamp(v, 1, 120)).prefault(1),
+  性别: z.enum(['男', '女', '其他']).prefault('女'),
+  状态: z.enum(['就绪', '受伤', '任务中', '死亡', '精神崩溃']).prefault('就绪'),
+  信赖度: z.coerce.number().transform(v => _.clamp(v, 0, 200)).prefault(0),
+  生命值: z.coerce.number().prefault(0),
+  最大生命值: z.coerce.number().prefault(100),
+  外貌: z.string().prefault('未知'),
+  综合经历: z.string().prefault('未知'),
+  爱好: z.array(z.string()).prefault([]),
+  厌恶: z.array(z.string()).prefault([]),
+  法力值: z.coerce.number().prefault(0),
+  最大法力值: z.coerce.number().prefault(0),
+  攻击力: z.coerce.number().prefault(0),
+  战场机动: z.coerce.number().prefault(0),
+  战斗技巧: z.coerce.number().prefault(0),
+  战术规划: z.coerce.number().prefault(0),
+  性格标签: z.array(z.string()).prefault([]),
+  座右铭: z.string().prefault(''),
+  台词: z.string().prefault(''),
+  当前想法: z.string().prefault(''),
+  种族: z.string().prefault('未知'),
+  出身地: z.string().prefault('未知'),
+  装备: z.object({
+    武器: z.string().prefault('无'),
+    防具: z.string().prefault('无'),
+    饰品: z.string().prefault('无'),
+  }).prefault({}),
+  技能配置: z.record(
+    z.string().describe('技能ID'),
+    z.object({
+      技能名: z.string().prefault(''),
+      等级: z.coerce.number().transform(v => _.clamp(v, 1, 10)).prefault(1),
+      消耗: z.object({
+        类型: z.enum(['法力值', '生命值']).prefault('法力值'),
+        数值: z.coerce.number().prefault(0),
+      }).prefault({}),
+      技能类型: z.object({
+        类型: z.enum(['伤害', '治疗', '特殊效果']).prefault('伤害'),
+        数值: z.coerce.number().prefault(0),
+      }).prefault({}),
+      描述: z.string().prefault(''),
+    }).prefault({})
+  ).prefault({}),
+}).prefault({});
+
+export const schema = z.object({
+  玩家势力信息: z.object({
+    势力名称: z.string().prefault(''),
+    势力领袖: z.string().prefault(''),
+    势力详情: z.string().prefault(''),
+    玩家: z.string().prefault('{{user}}'),
+    玩家指挥等级: z.coerce.number().prefault(1),
+    玩家出生地: z.string().prefault(''),
+    玩家出身: z.string().prefault(''),
+    玩家年龄段: z.string().prefault(''),
+    玩家标签: z.array(z.string()).prefault([]),
+    玩家势力地位: z.string().prefault(''),
+    游戏模式: z.string().prefault(''),
+  }).prefault({}),
+
+  游戏状态: z.object({
+    龙门币: z.coerce.number().prefault(0),
+    声望: z.coerce.number().prefault(0),
+    声望描述: z.string().prefault(''),
+    每日收入: z.coerce.number().prefault(0),
+    最大理智值: z.coerce.number().prefault(100),
+    当前理智值: z.coerce.number().prefault(100),
+  }).prefault({}),
+
+  泰拉世界状态: z.object({
+    当前日期: z.string().prefault(''),
+    当前停泊地: z.string().prefault(''),
+    天气状况: z.string().prefault(''),
+    天灾预警等级: z.string().prefault(''),  // 允许空字符串，有值时为：无/IV级/III级/II级/I级/特大天灾
+    近期大新闻: z.array(z.string()).prefault([]),
+    // 使用 z.preprocess 处理接收到数组的情况
+    // 当输入是数组(如 [])时，自动转换为空对象 {}，从而触发 z.object 内部的 prefault
+    当前全局事件: z.preprocess(
+      (val) => (Array.isArray(val) ? {} : val),
+      z.object({
+        名称: z.string().prefault(''),
+        描述: z.string().prefault(''),
+        剩余持续时间: z.coerce.number().prefault(0),
+      })
+    ).prefault({}),
+  }).prefault({}),
+
+  成员: z.record(z.string().describe('成员ID'), memberSchema).prefault({}),
+
+  任务: z.record(
+    z.string().describe('任务ID'),
+    z.object({
+      等级: z.enum(['SS', 'S', 'A', 'B', 'C', 'D', 'E', 'F']).prefault('F'),
+      标题: z.string().prefault(''),
+      描述: z.string().prefault(''),
+      报酬: z.object({
+        龙门币: z.coerce.number().prefault(0),
+        声望: z.coerce.number().prefault(0),
+        高级作战记录: z.coerce.number().prefault(0),
+        玩家指挥等级: z.coerce.number().prefault(0),
+        等级装备: z.coerce.number().transform((v) => _.clamp(v, 0, 5)).prefault(0),
+      }).prefault({}),
+    }).prefault({})
+  ).prefault({}),
+
+  当前任务: z.object({
+    等级: z.string().prefault(''),  // 允许空字符串，有值时为：SS/S/A/B/C/D/E/F
+    标题: z.string().prefault(''),
+    描述: z.string().prefault(''),
+    执行小队: z.string().prefault(''),
+    情报准确度: z.coerce.number().transform(v => _.clamp(v, 0, 100)).prefault(0),
+    任务进度: z.coerce.number().transform(v => _.clamp(v, 0, 100)).prefault(0),
+    任务进度描述: z.string().prefault(''),
+    报酬: z.object({
+      龙门币: z.coerce.number().prefault(0),
+      声望: z.coerce.number().prefault(0),
+      高级作战记录: z.coerce.number().prefault(0),
+      玩家指挥等级: z.coerce.number().prefault(0),
+      等级装备: z.coerce.number().transform((v) => _.clamp(v, 0, 5)).prefault(0),
+    }).prefault({}),
+  }).prefault({}),
+
+  小队: z.record(
+    z.string().describe('小队ID'),
+    z.object({
+      小队名称: z.string().prefault(''),
+      小队成员: z.array(z.string()).prefault([]),
+      小队评级: z.enum(['SS', 'S', 'A', 'B', 'C', 'D', 'E', 'F']).prefault('F'),
+      名声威望: z.string().prefault(''),
+    }).prefault({})
+  ).prefault({}),
+
+  基地: z.object({
+    名称: z.string().prefault(''),
+    类型: z.string().prefault(''),  // 如：轻型护卫舰、大型路行舰、移动要塞、移动基地等
+    最高航速: z.coerce.number().prefault(0),  // 单位：公里/小时
+  }).prefault({}),
+
+  设施区域: z.record(
+    z.string().describe('设施名称'),
+    z.object({
+      等级: z.coerce.number().prefault(1),
+      效果: z.string().prefault(''),
+      说明: z.string().prefault(''),
+    }).prefault({})
+  ).prefault({}),
+
+  仓库系统: z.record(
+    z.string().describe('物品名称'),
+    z.object({
+      分类: z.enum(['武器', '防具', '饰品', '消耗品', '杂物', '其他']).prefault('其他'),
+      等级: z.coerce.number().prefault(1),
+      说明: z.string().prefault(''),
+      效果: z.object({
+        最大生命值: z.coerce.number().prefault(0),
+        最大法力值: z.coerce.number().prefault(0),
+        攻击力: z.coerce.number().prefault(0),
+        战场机动: z.coerce.number().prefault(0),
+        战斗技巧: z.coerce.number().prefault(0),
+        战术规划: z.coerce.number().prefault(0),
+      }).prefault({}),
+      剩余数量: z.coerce.number().prefault(0),
+    }).prefault({})
+  ).prefault({}),
+
+  黑市售卖物品: z.record(
+    z.string().describe('物品ID'),
+    z.object({
+      物品名称: z.string().prefault(''),
+      分类: z.enum(['武器', '防具', '饰品', '消耗品', '杂物', '其他']).prefault('其他'),
+      等级: z.coerce.number().prefault(1),
+      说明: z.string().prefault(''),
+      效果: z.object({
+        最大生命值: z.coerce.number().prefault(0),
+        最大法力值: z.coerce.number().prefault(0),
+        攻击力: z.coerce.number().prefault(0),
+        战场机动: z.coerce.number().prefault(0),
+        战斗技巧: z.coerce.number().prefault(0),
+        战术规划: z.coerce.number().prefault(0),
+      }).prefault({}),
+      剩余数量: z.coerce.number().prefault(0),
+      售价: z.coerce.number().prefault(0),
+    }).prefault({})
+  ).prefault({}),
+
+  交际列表: z.record(
+    z.string().describe('势力ID'),
+    z.object({
+      势力名称: z.string().prefault(''),
+      势力介绍: z.string().prefault(''),
+      势力等级: z.coerce.number().prefault(1),
+      好感度: z.coerce.number().transform(v => _.clamp(v, -100, 100)).prefault(0),
+      当前关系: z.string().prefault('中立'),
+      每月交际收益: z.coerce.number().prefault(0),
+      // 3. 优化写法：使用 z.union 替代原先冗长的 .or 写法，兼容 ID(string) 或 完整对象
+      势力领导: z.union([memberSchema, z.string().describe('成员ID')]).prefault({}),
+      势力王牌: z.union([memberSchema, z.string().describe('成员ID')]).prefault({}),
+    }).prefault({})
+  ).prefault({}),
+});
+
+$(() => {
+  registerMvuSchema(schema);
+});
